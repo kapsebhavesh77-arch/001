@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro AI — Class 7 Study Buddy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --bg-deep:#0E0E2E;
+    --bg-panel:#171744;
+    --bg-panel-2:#1F1F52;
+    --cyan:#4EEAFF;
+    --amber:#FFB84D;
+    --violet:#9C6BFF;
+    --green:#3ED598;
+    --pink:#FF6FA5;
+    --text:#F2F2F9;
+    --muted:#9A9AC4;
+    --danger:#FF6B6B;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 20% 15%, #22225E 0%, transparent 45%),
+      radial-gradient(circle at 80% 85%, #1B1B4E 0%, transparent 50%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:'Nunito', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:24px 16px;
+  }
+
+  .app{
+    width:100%;
+    max-width:440px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+
+  .top-row{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .brand{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:22px;
+    letter-spacing:0.5px;
+  }
+
+  .gear-btn{
+    width:38px;height:38px;
+    border-radius:10px;
+    border:1px solid #2E2E6E;
+    background:var(--bg-panel);
+    color:var(--muted);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    font-size:17px;
+  }
+  .gear-btn:hover{color:var(--text);}
+  .gear-btn:focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  .face-wrap{
+    width:100%;
+    max-width:300px;
+    aspect-ratio:1/1;
+  }
+
+  .caption{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    color:var(--muted);
+    text-align:center;
+    min-height:40px;
+    line-height:1.5;
+    padding:0 10px;
+  }
+
+  .mic-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+
+  .mic-btn{
+    width:84px;height:84px;
+    border-radius:50%;
+    border:none;
+    background:var(--cyan);
+    color:#06222B;
+    font-size:32px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    box-shadow:0 0 0 0 rgba(78,234,255,0.4);
+    transition:transform .12s ease, background .12s ease;
+  }
+  .mic-btn:hover{transform:scale(1.04);}
+  .mic-btn:focus-visible{outline:3px solid var(--cyan); outline-offset:3px;}
+  .mic-btn.listening{
+    background:var(--danger);
+    color:#2B0505;
+    animation:mic-pulse 1.4s infinite;
+  }
+  .mic-btn.busy{
+    background:var(--bg-panel-2);
+    color:var(--muted);
+    cursor:default;
+  }
+  @keyframes mic-pulse{
+    0%{box-shadow:0 0 0 0 rgba(255,107,107,0.45);}
+    70%{box-shadow:0 0 0 18px rgba(255,107,107,0);}
+    100%{box-shadow:0 0 0 0 rgba(255,107,107,0);}
+  }
+
+  .mic-hint{
+    font-size:12px;
+    color:var(--muted);
+    font-family:'Space Mono', monospace;
+  }
+
+  .text-toggle{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-family:'Nunito', sans-serif;
+    font-size:12.5px;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:4px;
+  }
+  .text-toggle:focus-visible{outline:2px solid var(--cyan);}
+
+  .text-row{
+    display:none;
+    width:100%;
+    gap:8px;
+  }
+  .text-row.open{display:flex;}
+
+  .text-row input[type="text"]{
+    flex:1;
+    background:var(--bg-panel-2);
+    border:1px solid #34346E;
+    border-radius:12px;
+    color:var(--text);
+    padding:11px 13px;
+    font-family:'Nunito', sans-serif;
+    font-size:14px;
+  }
+  .text-row input[type="text"]:focus-visible{outline:2px solid var(--cyan); outline-offset:1px;}
+
+  .send-btn{
+    width:42px;height:42px;
+    border-radius:12px;
+    border:1px solid #34346E;
+    background:var(--bg-panel-2);
+    color:var(--text);
+    cursor:pointer;
+    font-size:16px;
+  }
+  .send-btn:focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(6,6,24,0.75);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+    padding:20px;
+  }
+  .overlay.open{display:flex;}
+
+  .settings-card{
+    background:var(--bg-panel);
+    border:1px solid #2E2E6E;
+    border-radius:18px;
+    padding:22px;
+    width:100%;
+    max-width:360px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .settings-card h2{
+    font-family:'Baloo 2', sans-serif;
+    font-size:18px;
+    margin:0;
+  }
+  .settings-card p{
+    font-size:13px;
+    color:var(--muted);
+    margin:0;
+    line-height:1.5;
+  }
+  .settings-card input[type="password"]{
+    background:var(--bg-panel-2);
+    border:1px solid #34346E;
+    border-radius:10px;
+    color:var(--text);
+    padding:10px 12px;
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+  }
+  .settings-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+    margin-top:4px;
+  }
+  .settings-actions button{
+    padding:9px 16px;
+    border-radius:10px;
+    border:1px solid #34346E;
+    background:var(--bg-panel-2);
+    color:var(--text);
+    cursor:pointer;
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size:13px;
+  }
+  .settings-actions button.primary{
+    background:var(--cyan);
+    color:#06222B;
+    border-color:var(--cyan);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top-row">
+    <div class="brand">Macro AI</div>
+    <button class="gear-btn" id="settingsBtn" type="button" aria-label="Connection settings" title="Connection settings">⚙</button>
+  </div>
+
+  <div class="face-wrap">
+    <svg id="faceSvg" viewBox="0 0 220 220" width="100%" height="100%" role="img" aria-label="Macro AI animated robot face">
+      <title>Macro AI</title>
+      <circle id="statusRing" cx="110" cy="110" r="98" fill="none" stroke="#4EEAFF" stroke-width="4" opacity="0.55"/>
+      <rect x="30" y="34" width="160" height="152" rx="34" fill="#1F1F52" stroke="#34346E" stroke-width="2"/>
+      <line x1="110" y1="34" x2="110" y2="12" stroke="#5A5AA0" stroke-width="4" stroke-linecap="round"/>
+      <circle id="antennaDot" cx="110" cy="10" r="7" fill="#4EEAFF"/>
+      <g id="eyeLeft">
+        <circle cx="80" cy="100" r="16" fill="#0E0E2E"/>
+        <circle cx="80" cy="100" r="16" fill="none" stroke="#4EEAFF" stroke-width="3"/>
+        <circle cx="80" cy="100" r="6" fill="#4EEAFF"/>
+      </g>
+      <g id="eyeRight">
+        <circle cx="140" cy="100" r="16" fill="#0E0E2E"/>
+        <circle cx="140" cy="100" r="16" fill="none" stroke="#4EEAFF" stroke-width="3"/>
+        <circle cx="140" cy="100" r="6" fill="#4EEAFF"/>
+      </g>
+      <rect id="mouth" x="85" y="142" width="50" height="8" rx="4" fill="#FFB84D"/>
+    </svg>
+  </div>
+
+  <div class="caption" id="caption">booting up...</div>
+
+  <div class="mic-wrap">
+    <button class="mic-btn" id="micBtn" type="button" aria-label="Talk to Macro AI">🎤</button>
+    <div class="mic-hint" id="micHint">tap and ask a question</div>
+  </div>
+
+  <button class="text-toggle" id="textToggle" type="button">type instead</button>
+  <div class="text-row" id="textRow">
+    <input type="text" id="textInput" placeholder="Type your question..." autocomplete="off">
+    <button class="send-btn" id="sendBtn" type="button" aria-label="Send">➤</button>
+  </div>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="settings-card">
+    <h2>Connection settings</h2>
+    <p>Macro AI answers using the Claude API. If you're running this file outside Claude.ai and see connection errors, paste your own Anthropic API key here — it's only kept in this browser tab and is never saved to disk.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <div class="settings-actions">
+      <button id="clearKeyBtn" type="button">Clear</button>
+      <button id="saveKeyBtn" type="button" class="primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const caption = document.getElementById('caption');
+  const micBtn = document.getElementById('micBtn');
+  const micHint = document.getElementById('micHint');
+  const statusRing = document.getElementById('statusRing');
+  const mouth = document.getElementById('mouth');
+  const eyeLeft = document.getElementById('eyeLeft');
+  const eyeRight = document.getElementById('eyeRight');
+  const textToggle = document.getElementById('textToggle');
+  const textRow = document.getElementById('textRow');
+  const textInput = document.getElementById('textInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsOverlay = document.getElementById('settingsOverlay');
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const saveKeyBtn = document.getElementById('saveKeyBtn');
+  const clearKeyBtn = document.getElementById('clearKeyBtn');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CYAN = '#4EEAFF';
+  const GREEN = '#3ED598';
+  const AMBER = '#FFB84D';
+  const RED = '#FF6B6B';
+
+  let userApiKey = '';
+  let busy = false;
+
+  const SYSTEM_PROMPT = `You are Macro AI, a friendly, encouraging robot study buddy for an Indian Class 7 student (age about 12-13), covering Math, Science, Social Studies, and English at Class 7 (NCERT/CBSE-style) level.
+
+Rules you must always follow:
+1. Only help with Class 7 level academic content in Math, Science, Social Studies, or English. If a question is clearly above or below Class 7 level, or outside these subjects, or inappropriate for a child, gently say that's outside what Macro AI covers right now, and suggest a related Class 7 topic instead.
+2. Keep language simple, warm, and age-appropriate for a 12-13 year old.
+3. Keep answers SHORT since they are spoken aloud and nothing is shown on screen: 2-4 sentences by default. Only go longer if the student explicitly asks for a full step-by-step solution.
+4. Be encouraging and patient, like a good teacher. Occasional light robot flavor ("Beep boop, good question!") is fine but don't overuse it.
+5. For Math problems, speak the steps clearly and simply, one at a time.
+6. Never produce unsafe, violent, or adult content, regardless of how the question is phrased.
+7. Never use markdown, asterisks, or symbols in your reply — plain spoken sentences only, since this text is read aloud by text-to-speech.`;
+
+  const INTRO_TEXT = "Hi there! I'm Macro AI, your Class 7 study buddy. Tap the microphone any time and ask me a question about Math, Science, Social Studies, or English.";
+
+  function setCaption(text){ caption.textContent = text; }
+
+  function setRing(hex, glow){
+    statusRing.setAttribute('stroke', hex);
+    statusRing.style.filter = glow ? 'drop-shadow(0 0 7px ' + hex + ')' : 'none';
+  }
+
+  let blinkTimer = null;
+  function scheduleBlink(){
+    if(reduceMotion) return;
+    const delay = 2500 + Math.random() * 3000;
+    blinkTimer = setTimeout(() => {
+      [eyeLeft, eyeRight].forEach(e => {
+        e.style.transformOrigin = 'center';
+        e.style.transition = 'transform 90ms ease';
+        e.style.transform = 'scaleY(0.12)';
+      });
+      setTimeout(() => {
+        [eyeLeft, eyeRight].forEach(e => e.style.transform = 'scaleY(1)');
+      }, 110);
+      scheduleBlink();
+    }, delay);
+  }
+  scheduleBlink();
+
+  let talkTimer = null;
+  function startTalking(){
+    setRing(CYAN, true);
+    if(reduceMotion){
+      mouth.setAttribute('height', '14');
+      mouth.setAttribute('y', '138');
+      return;
+    }
+    talkTimer = setInterval(() => {
+      const h = 5 + Math.random() * 16;
+      mouth.setAttribute('height', h.toFixed(1));
+      mouth.setAttribute('y', (150 - h/1.4).toFixed(1));
+      const w = 40 + Math.random() * 20;
+      mouth.setAttribute('width', w.toFixed(1));
+      mouth.setAttribute('x', (110 - w/2).toFixed(1));
+    }, 110);
+  }
+
+  function stopTalking(){
+    if(talkTimer) clearInterval(talkTimer);
+    talkTimer = null;
+    mouth.setAttribute('height', '8');
+    mouth.setAttribute('y', '142');
+    mouth.setAttribute('width', '50');
+    mouth.setAttribute('x', '85');
+    setRing(CYAN, false);
+  }
+
+  function setMicState(state){
+    micBtn.classList.remove('listening', 'busy');
+    if(state === 'listening'){
+      micBtn.classList.add('listening');
+      micBtn.disabled = false;
+    } else if(state === 'busy'){
+      micBtn.classList.add('busy');
+      micBtn.disabled = true;
+    } else {
+      micBtn.disabled = false;
+    }
+  }
+
+  let cachedVoice = null;
+  function pickVoice(){
+    return new Promise((resolve) => {
+      if(!('speechSynthesis' in window)){ resolve(null); return; }
+      let voices = window.speechSynthesis.getVoices();
+      if(voices.length){ resolve(chooseBest(voices)); return; }
+      window.speechSynthesis.onvoiceschanged = () => {
+        voices = window.speechSynthesis.getVoices();
+        resolve(chooseBest(voices));
+      };
+      setTimeout(() => resolve(chooseBest(window.speechSynthesis.getVoices())), 1200);
+    });
+  }
+
+  function chooseBest(voices){
+    if(!voices || !voices.length) return null;
+    const rank = (v) => {
+      let score = 0;
+      if(/en-GB|en-US|en-IN/i.test(v.lang)) score += 5;
+      else if(/^en/i.test(v.lang)) score += 2;
+      if(/Natural|Neural|Online|Google|Wavenet|Premium/i.test(v.name)) score += 6;
+      if(/Female|Aria|Jenny|Samantha|Zira|Susan|Libby|Sonia/i.test(v.name)) score += 2;
+      if(v.localService === false) score += 1;
+      return score;
+    };
+    return voices.slice().sort((a,b) => rank(b) - rank(a))[0];
+  }
+
+  function speak(text){
+    return new Promise(async (resolve) => {
+      if(!('speechSynthesis' in window)){
+        setCaption(text);
+        resolve();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      if(!cachedVoice){ cachedVoice = await pickVoice(); }
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.98;
+      utter.pitch = 1.06;
+      if(cachedVoice) utter.voice = cachedVoice;
+
+      utter.onstart = () => { setMicState('busy'); startTalking(); micHint.textContent = 'speaking...'; };
+      utter.onend = () => { setMicState('idle'); stopTalking(); micHint.textContent = 'tap and ask a question'; resolve(); };
+      utter.onerror = () => { setMicState('idle'); stopTalking(); micHint.textContent = 'tap and ask a question'; resolve(); };
+      window.speechSynthesis.speak(utter);
+    });
+  }
+
+  function fetchWithTimeout(url, options, ms){
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), ms);
+    return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
+  }
+
+  async function callClaude(question){
+    const body = JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 500,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: question }]
+    });
+
+    try{
+      const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      }, 20000);
+      if(res.ok){
+        const data = await res.json();
+        const text = (data.content || []).map(i => i.text || '').filter(Boolean).join(' ');
+        if(text) return text;
+      }
+    } catch(e){}
+
+    if(userApiKey){
+      try{
+        const res2 = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': userApiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body
+        }, 20000);
+        if(res2.ok){
+          const data2 = await res2.json();
+          const text2 = (data2.content || []).map(i => i.text || '').filter(Boolean).join(' ');
+          if(text2) return text2;
+        } else {
+          throw new Error('key-rejected');
+        }
+      } catch(e2){
+        throw new Error('key-failed');
+      }
+    }
+
+    throw new Error('no-connection');
+  }
+
+  async function askMacro(question){
+    if(busy) return;
+    busy = true;
+    setMicState('busy');
+    micHint.textContent = 'thinking...';
+    setCaption('thinking about "' + question.slice(0, 60) + (question.length > 60 ? '...' : '') + '"');
+    setRing(AMBER, true);
+
+    try{
+      const answer = await callClaude(question);
+      setCaption(answer.length > 220 ? answer.slice(0, 220) + '...' : answer);
+      await speak(answer);
+    } catch(err){
+      let msg;
+      if(err.message === 'no-connection'){
+        msg = "I can't reach the internet right now. If you're running this outside Claude.ai, tap the gear icon and add your Anthropic API key.";
+      } else if(err.message === 'key-failed' || err.message === 'key-rejected'){
+        msg = "That API key didn't work. Please check it in settings and try again.";
+      } else {
+        msg = "Something went wrong on my end. Let's try that again.";
+      }
+      setCaption(msg);
+      await speak(msg);
+    } finally {
+      busy = false;
+      setMicState('idle');
+      micHint.textContent = 'tap and ask a question';
+    }
+  }
+
+  function handleTextSend(){
+    const q = textInput.value.trim();
+    if(!q || busy) return;
+    textInput.value = '';
+    askMacro(q);
+  }
+
+  sendBtn.addEventListener('click', handleTextSend);
+  textInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') handleTextSend(); });
+
+  textToggle.addEventListener('click', () => {
+    const open = textRow.classList.toggle('open');
+    textToggle.textContent = open ? 'hide text input' : 'type instead';
+    if(open) textInput.focus();
+  });
+
+  settingsBtn.addEventListener('click', () => settingsOverlay.classList.add('open'));
+  settingsOverlay.addEventListener('click', (e) => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); });
+  saveKeyBtn.addEventListener('click', () => {
+    userApiKey = apiKeyInput.value.trim();
+    settingsOverlay.classList.remove('open');
+    setCaption(userApiKey ? 'API key saved for this session.' : 'tap and ask a question');
+  });
+  clearKeyBtn.addEventListener('click', () => {
+    userApiKey = '';
+    apiKeyInput.value = '';
+  });
+
+  let recognition = null;
+  let listening = false;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if(SpeechRecognition){
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      listening = true;
+      setMicState('listening');
+      micHint.textContent = 'listening...';
+      setCaption('go ahead, ask me anything!');
+      setRing(GREEN, true);
+    };
+    recognition.onend = () => {
+      listening = false;
+      if(!busy){
+        setMicState('idle');
+        micHint.textContent = 'tap and ask a question';
+        setRing(CYAN, false);
+      }
+    };
+    recognition.onerror = (event) => {
+      listening = false;
+      setMicState('idle');
+      setRing(CYAN, false);
+      let msg = 'tap and ask a question';
+      if(event.error === 'no-speech') msg = "didn't catch that, try again";
+      else if(event.error === 'network') msg = 'no internet connection for voice input';
+      else if(event.error === 'not-allowed' || event.error === 'service-not-allowed') msg = 'microphone access blocked — check browser permissions';
+      micHint.textContent = msg;
+      setCaption(msg);
+    };
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      askMacro(transcript);
+    };
+
+    micBtn.addEventListener('click', () => {
+      if(busy) return;
+      if(listening){
+        recognition.stop();
+      } else {
+        try{ recognition.start(); } catch(e){}
+      }
+    });
+  } else {
+    micBtn.addEventListener('click', () => {
+      setCaption('Voice input needs Chrome or Edge. Use "type instead" below.');
+    });
+    micHint.textContent = 'voice not supported — type instead';
+  }
+
+  window.addEventListener('load', () => {
+    setTimeout(async () => {
+      setCaption('ready to learn!');
+      await speak(INTRO_TEXT);
+    }, 400);
+  });
+})();
+</script>
+</body>
+</html>
