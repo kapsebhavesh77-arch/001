@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vision AI · Typing Panel</title>
+  <style>
+    /* ---------- RESET & BODY ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 70% 30%, #141c34, #070b17);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 1.5rem;
+    }
+
+    /* ----- MAIN CARD (glass) ----- */
+    .typing-card {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(14, 20, 40, 0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 3.5rem;
+      padding: 2.2rem 2rem 2.5rem;
+      box-shadow: 0 40px 70px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.4rem;
+      color: #b6cdff;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #29355a;
+      padding-bottom: 0.8rem;
+    }
+
+    .header span {
+      background: #1f2d57;
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      font-size: 0.7rem;
+      color: #99b6ff;
+      margin-left: auto;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .input-group input {
+      background: #0f172f;
+      border: 1px solid #31416a;
+      border-radius: 60px;
+      padding: 1rem 1.6rem;
+      font-size: 1rem;
+      color: #e6f0ff;
+      outline: none;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+
+    .input-group input::placeholder {
+      color: #5d73a0;
+      font-weight: 300;
+    }
+
+    .input-group input:focus {
+      border-color: #6b92ff;
+      box-shadow: 0 0 0 3px #2b437a55;
+      background: #0c142b;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      justify-content: space-between;
+    }
+
+    .btn {
+      background: #1f2d53;
+      border: none;
+      border-radius: 60px;
+      padding: 0.8rem 1.6rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #d6e5ff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: 0.15s;
+      border: 1px solid #3b4f7e;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      flex: 1 1 auto;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: #3a5bc7;
+      border-color: #6a8cff;
+      color: white;
+      box-shadow: 0 4px 16px #1f3a8a55;
+      flex: 2;
+    }
+
+    .btn-primary:hover {
+      background: #4f72e0;
+      border-color: #8bb0ff;
+      transform: scale(1.02);
+      box-shadow: 0 6px 20px #2a47b055;
+    }
+
+    .btn-secondary {
+      background: #29355b;
+      border-color: #4c5d8a;
+    }
+
+    .btn-secondary:hover {
+      background: #37477a;
+      border-color: #6b7fb5;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+
+    .chip {
+      background: #1a2549;
+      border: 1px solid #3c4f7a;
+      border-radius: 40px;
+      padding: 0.3rem 1rem;
+      font-size: 0.75rem;
+      color: #b2ccff;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+
+    .chip:hover {
+      background: #2f4080;
+      border-color: #6f8fff;
+      color: white;
+    }
+
+    .mirror-output {
+      background: #0c1328cc;
+      border-radius: 1.8rem;
+      padding: 0.9rem 1.4rem;
+      margin-top: 1.4rem;
+      border: 1px solid #2d365a;
+      color: #d6e5ff;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      min-height: 3.6rem;
+      backdrop-filter: blur(4px);
+      box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.4);
+      word-break: break-word;
+    }
+
+    .mirror-output strong {
+      color: #aecaff;
+    }
+
+    .hotspot-status {
+      margin-top: 1.2rem;
+      font-size: 0.75rem;
+      background: #0d1733;
+      padding: 0.3rem 1.2rem;
+      border-radius: 40px;
+      border: 1px solid #374a78;
+      color: #7e9ad6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+    }
+
+    .hotspot-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #4caf50;
+      box-shadow: 0 0 12px #4caf50;
+      display: inline-block;
+      transition: 0.3s;
+    }
+
+    .footer-note {
+      margin-top: 1.2rem;
+      font-size: 0.65rem;
+      color: #4f67a0;
+      text-align: center;
+      border-top: 1px solid #1c274a;
+      padding-top: 1rem;
+    }
+
+    @media (max-width: 480px) {
+      .typing-card { padding: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="typing-card">
+  <div class="header">
+    ⌨️ typing panel
+    <span>hotspot</span>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="questionInput" placeholder="Ask Vision AI ... (oral answer)" autofocus />
+    <div class="btn-row">
+      <button class="btn btn-primary" id="askBtn">🔊 Ask</button>
+      <button class="btn btn-secondary" id="speakBtn">🔁 Repeat</button>
+    </div>
+  </div>
+
+  <!-- sample chips -->
+  <div class="sample-chips">
+    <span class="chip" data-question="What is Pythagoras theorem?">📐 Pythagoras</span>
+    <span class="chip" data-question="Tell me about Macro Vision Academy Burhanpur">🏫 Macro Vision</span>
+    <span class="chip" data-question="Explain photosynthesis">🌿 Photosynthesis</span>
+    <span class="chip" data-question="What is class 7 SST?">📘 SST</span>
+  </div>
+
+  <!-- mirror output -->
+  <div class="mirror-output" id="mirrorOutput">
+    <strong>👋 Hi, I am Vision AI</strong> — your study buddy.<br />
+    <span style="color:#7a94c0;">Ask me about Class 7 CBSE or Macro Vision Academy.</span>
+  </div>
+
+  <!-- hotspot indicator -->
+  <div class="hotspot-status">
+    <span class="hotspot-dot" id="hotspotDot"></span>
+    <span id="hotspotLabel">hotspot · active</span>
+    <span style="font-size:0.65rem; color:#4f6b9a;">🔗</span>
+  </div>
+
+  <div class="footer-note">
+    ⚡ oral answers · class 7 CBSE · Macro Vision Academy, Burhanpur
+  </div>
+</div>
+
+<script>
+  (function() {
+    // =============================================================
+    //  TYPING PANEL – sends questions to robot face via hotspot
+    //  Uses BroadcastChannel + localStorage for cross-tab comms
+    // =============================================================
+
+    const questionInput = document.getElementById('questionInput');
+    const askBtn = document.getElementById('askBtn');
+    const speakBtn = document.getElementById('speakBtn');
+    const mirrorOutput = document.getElementById('mirrorOutput');
+    const hotspotDot = document.getElementById('hotspotDot');
+    const hotspotLabel = document.getElementById('hotspotLabel');
+
+    // ----- knowledge base (for local mirror & to send answers) -----
+    const knowledge = {
+      'hi': "Hi, I am Vision AI, your study buddy! I cover Class 7 CBSE subjects: Math, Science, SST, English, and more.",
+      'hello': "Hello! I'm Vision AI. Ask me anything from your 7th grade syllabus or about Macro Vision Academy.",
+      'who are you': "I'm Vision AI, your study buddy, designed for Class 7 CBSE. I also know about Macro Vision Academy, Burhanpur.",
+      'what is your name': "My name is Vision AI. I'm here to help you study with oral answers!",
+      'vision ai': "That's me! Vision AI, your study buddy for Class 7 CBSE and Macro Vision Academy.",
+      'pythagoras theorem': "Pythagoras theorem: a² + b² = c² for right triangles. Class 7 CBSE introduces this.",
+      'pythagorean theorem': "Pythagoras theorem: a² + b² = c². Class 7 CBSE includes simple problems.",
+      'photosynthesis': "Photosynthesis: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂, using sunlight and chlorophyll. Class 7 Science.",
+      'class 7 science': "Class 7 Science: Nutrition in Plants, Nutrition in Animals, Heat, Acids & Bases, Physical & Chemical Changes, Weather, etc.",
+      'class 7 maths': "Class 7 Maths: Integers, Fractions, Decimals, Simple Equations, Lines & Angles, Triangles, Symmetry, Perimeter & Area, Rational Numbers.",
+      'class 7 sst': "Class 7 SST: History (Medieval India), Geography (Environment, Inside our Earth, Air, Water), Civics (Equality, State Government, Media & Gender).",
+      'class 7 english': "Class 7 English: Grammar, Reading Comprehension, Writing Skills, Literature (Honeycomb & An Alien Hand).",
+      'class 7 cbse': "CBSE Class 7: English, Hindi, Mathematics, Science, Social Science. I'm here for all!",
+      'macro vision academy': "Macro Vision Academy is a school in Burhanpur, MP, known for quality education and holistic development.",
+      'macro vision academy burhanpur': "Macro Vision Academy, Burhanpur is an esteemed institution focusing on academics, sports, and co-curriculars.",
+      'burhanpur': "Burhanpur is a city in Madhya Pradesh. Macro Vision Academy is one of the prominent schools there.",
+      'academy': "Macro Vision Academy, Burhanpur — a school that nurtures young minds. Vision AI is inspired by their learning environment.",
+      'vision academy': "You may mean Macro Vision Academy in Burhanpur. It's a great school!",
+      'what is 7th cbse': "CBSE Class 7 is the 7th grade under CBSE. Subjects: Math, Science, Social Science, English, Hindi.",
+      'help': "Ask me a question from Class 7 CBSE (Math, Science, SST, English) or about Macro Vision Academy, Burhanpur.",
+      'default': "I'm not sure about that. But I can answer Class 7 CBSE questions and about Macro Vision Academy, Burhanpur."
+    };
+
+    function getAnswer(query) {
+      if (!query || query.trim() === '') return "Please ask me something!";
+      const q = query.toLowerCase().trim();
+      for (let [key, val] of Object.entries(knowledge)) {
+        if (q.includes(key)) return val;
+      }
+      if (q.includes('pythag') || q.includes('theorem')) return knowledge['pythagoras theorem'];
+      if (q.includes('photo') || q.includes('synthesis')) return knowledge['photosynthesis'];
+      if (q.includes('macro') || q.includes('vision academy') || q.includes('burhanpur')) return knowledge['macro vision academy burhanpur'];
+      if (q.includes('class 7') || q.includes('7th')) return knowledge['class 7 cbse'];
+      if (q.includes('math')) return knowledge['class 7 maths'];
+      if (q.includes('science')) return knowledge['class 7 science'];
+      if (q.includes('sst') || q.includes('social')) return knowledge['class 7 sst'];
+      if (q.includes('english')) return knowledge['class 7 english'];
+      return knowledge['default'];
+    }
+
+    // ----- send message to robot face (via BroadcastChannel + localStorage) -----
+    function sendToFace(message) {
+      // try BroadcastChannel first
+      try {
+        const channel = new BroadcastChannel('vision-ai-channel');
+        channel.postMessage(message);
+        console.log('Sent via BroadcastChannel', message);
+      } catch (e) {
+        // fallback: localStorage
+        try {
+          localStorage.setItem('visionAiMessage', JSON.stringify(message));
+          // trigger storage event manually for same-tab
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'visionAiMessage',
+            newValue: JSON.stringify(message),
+          }));
+          console.log('Sent via localStorage', message);
+        } catch (err) {
+          console.warn('Could not send message', err);
+        }
+      }
+    }
+
+    // ----- process question (local mirror + send to face) -----
+    function processQuestion(question) {
+      if (!question || question.trim() === '') {
+        mirrorOutput.innerHTML = `<strong>👀</strong> Please type a question.`;
+        return;
+      }
+
+      const answer = getAnswer(question);
+      // update mirror
+      mirrorOutput.innerHTML = `<strong>🧠 Vision AI:</strong> ${answer}`;
+
+      // send to robot face (for speaking)
+      sendToFace({
+        type: 'ask',
+        question: question,
+        answer: answer
+      });
+
+      // hotspot blink
+      hotspotDot.style.background = '#ffd966';
+      hotspotDot.style.boxShadow = '0 0 20px #ffd966';
+      setTimeout(() => {
+        hotspotDot.style.background = '#4caf50';
+        hotspotDot.style.boxShadow = '0 0 12px #4caf50';
+      }, 300);
+
+      // clear input
+      questionInput.value = '';
+      questionInput.focus();
+    }
+
+    // ----- repeat last answer (send speak command) -----
+    function repeatLast() {
+      const currentText = mirrorOutput.innerText;
+      if (currentText && !currentText.includes('Ask me anything')) {
+        const clean = currentText.replace('🧠 Vision AI:', '').trim();
+        if (clean.length > 2) {
+          sendToFace({
+            type: 'speak',
+            text: clean
+          });
+          mirrorOutput.innerHTML = `<strong>🔁</strong> Repeating: ${clean}`;
+          // blink
+          hotspotDot.style.background = '#ffd966';
+          hotspotDot.style.boxShadow = '0 0 20px #ffd966';
+          setTimeout(() => {
+            hotspotDot.style.background = '#4caf50';
+            hotspotDot.style.boxShadow = '0 0 12px #4caf50';
+          }, 300);
+        } else {
+          mirrorOutput.innerHTML = `<strong>🤖</strong> Nothing to repeat. Ask a question first!`;
+        }
+      } else {
+        mirrorOutput.innerHTML = `<strong>🤖</strong> Ask a question first, then I'll speak!`;
+      }
+    }
+
+    // ----- event listeners -----
+    askBtn.addEventListener('click', function() {
+      const q = questionInput.value.trim();
+      if (q === '') {
+        mirrorOutput.innerHTML = `<strong>🤖</strong> Ask me something from Class 7 CBSE or about Macro Vision Academy!`;
+        return;
+      }
+      processQuestion(q);
+    });
+
+    speakBtn.addEventListener('click', repeatLast);
+
+    questionInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        askBtn.click();
+      }
+    });
+
+    // sample chips
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', function() {
+        const q = this.getAttribute('data-question');
+        if (q) {
+          questionInput.value = q;
+          askBtn.click();
+        }
+      });
+    });
+
+    // ----- initial greeting (send to face) -----
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        const greeting = "Hi, I am Vision AI, your study buddy. Ask me anything from Class 7 CBSE or about Macro Vision Academy, Burhanpur.";
+        mirrorOutput.innerHTML = `<strong>👋 Hi, I am Vision AI</strong> — your study buddy.<br> Ask me about Class 7 CBSE or Macro Vision Academy.`;
+        // send greeting to face to speak
+        sendToFace({
+          type: 'speak',
+          text: greeting
+        });
+      }, 600);
+    });
+
+    console.log('Vision AI Typing Panel ready · hotspot active');
+  })();
+</script>
+</body>
+</html>

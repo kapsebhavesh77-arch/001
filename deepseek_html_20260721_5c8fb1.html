@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vision AI · Robot Face</title>
+  <style>
+    /* ---------- RESET & BODY ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 30% 20%, #141c34, #070b17);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 1.5rem;
+    }
+
+    /* ----- MAIN CARD (glass) ----- */
+    .face-card {
+      max-width: 520px;
+      width: 100%;
+      background: rgba(14, 20, 40, 0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 4.5rem 4.5rem 3.5rem 3.5rem;
+      padding: 2.2rem 2rem 2.5rem;
+      box-shadow: 0 40px 70px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      transition: all 0.2s;
+    }
+
+    /* ----- FACE SCREEN (crt-like) ----- */
+    .face-screen {
+      background: #080d1f;
+      border-radius: 3.8rem 3.8rem 4.2rem 4.2rem;
+      padding: 2rem 1.5rem 1.8rem;
+      box-shadow: inset 0 10px 24px rgba(0, 0, 0, 0.9), 0 0 0 1px #2f3a66;
+    }
+
+    .face {
+      background: radial-gradient(circle at 30% 25%, #1d274a, #070b1a);
+      border-radius: 2.8rem;
+      padding: 2.6rem 1.5rem 2.2rem;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.8);
+      border-bottom: 4px solid #3f5590;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle scanline effect */
+    .face::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(0deg,
+          rgba(0, 0, 0, 0.03) 0px,
+          rgba(0, 0, 0, 0.03) 2px,
+          transparent 2px,
+          transparent 6px);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ----- EYES (expressive) ----- */
+    .eyes {
+      display: flex;
+      gap: 4.2rem;
+      justify-content: center;
+      margin-bottom: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eye {
+      width: 2rem;
+      height: 2rem;
+      background: #b3e4ff;
+      border-radius: 50%;
+      box-shadow: 0 0 28px #4f8eff, 0 0 70px #2f6eff;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .eye::after {
+      content: '';
+      position: absolute;
+      width: 0.7rem;
+      height: 0.7rem;
+      background: #0a0e1a;
+      border-radius: 50%;
+      top: 0.25rem;
+      right: 0.15rem;
+      box-shadow: inset 0 0 8px #000;
+      transition: 0.15s;
+    }
+
+    /* eye glow when talking */
+    .eye.talking {
+      box-shadow: 0 0 48px #8bb8ff, 0 0 90px #3f7eff, 0 0 140px #1f4eff;
+      animation: eyePulse 0.9s ease-in-out infinite alternate;
+    }
+
+    @keyframes eyePulse {
+      0% { box-shadow: 0 0 30px #4f8eff, 0 0 70px #2f6eff; }
+      100% { box-shadow: 0 0 55px #8bb8ff, 0 0 100px #3f7eff, 0 0 150px #1f4eff; }
+    }
+
+    /* ----- MOUTH (talking animation) ----- */
+    .mouth-container {
+      position: relative;
+      z-index: 1;
+      margin-top: 0.1rem;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .mouth {
+      width: 5rem;
+      height: 1.4rem;
+      background: #1a2547;
+      border-radius: 0 0 3.2rem 3.2rem;
+      border-bottom: 6px solid #4a6bb8;
+      transition: all 0.15s ease;
+      box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.7);
+      position: relative;
+    }
+
+    /* talking mouth animation - multiple shapes */
+    .mouth.talking {
+      border-bottom-color: #a8cbff;
+      box-shadow: 0 0 35px #3d8cff, inset 0 4px 12px rgba(0, 0, 0, 0.7);
+      animation: talkMouth 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes talkMouth {
+      0% {
+        height: 1.4rem;
+        width: 5rem;
+        border-bottom-width: 6px;
+        border-radius: 0 0 3.2rem 3.2rem;
+      }
+      25% {
+        height: 2rem;
+        width: 4.6rem;
+        border-bottom-width: 8px;
+        border-radius: 0 0 2.5rem 2.5rem;
+      }
+      50% {
+        height: 1.6rem;
+        width: 5.2rem;
+        border-bottom-width: 5px;
+        border-radius: 0 0 3.8rem 3.8rem;
+      }
+      75% {
+        height: 2.2rem;
+        width: 4.8rem;
+        border-bottom-width: 9px;
+        border-radius: 0 0 2rem 2rem;
+      }
+      100% {
+        height: 1.8rem;
+        width: 5rem;
+        border-bottom-width: 7px;
+        border-radius: 0 0 3.2rem 3.2rem;
+      }
+    }
+
+    /* ----- NAME & STATUS ----- */
+    .robot-name {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #d0e4ff, #7bb3ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-top: 0.8rem;
+      text-shadow: 0 0 50px #3f7eff55;
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-badge {
+      font-size: 0.8rem;
+      background: #131f3f;
+      padding: 0.4rem 1.6rem;
+      border-radius: 40px;
+      color: #c2d8ff;
+      border: 1px solid #3d5280;
+      margin-top: 0.2rem;
+      font-weight: 500;
+      letter-spacing: 0.4px;
+      position: relative;
+      z-index: 1;
+      transition: 0.2s;
+    }
+
+    .status-badge.speaking {
+      background: #1f3a7a;
+      border-color: #6a8fff;
+      color: #ffffff;
+      box-shadow: 0 0 30px #2f6eff55;
+    }
+
+    /* ----- HOTSPOT INDICATOR ----- */
+    .hotspot-status {
+      margin-top: 1.6rem;
+      font-size: 0.8rem;
+      background: #0d1733;
+      padding: 0.4rem 1.4rem;
+      border-radius: 40px;
+      border: 1px solid #374a78;
+      color: #7e9ad6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .hotspot-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #4caf50;
+      box-shadow: 0 0 16px #4caf50;
+      display: inline-block;
+      transition: 0.3s;
+    }
+
+    .hotspot-dot.inactive {
+      background: #7f8fa6;
+      box-shadow: none;
+    }
+
+    .hotspot-dot.blink {
+      animation: dotBlink 0.4s ease 2;
+    }
+
+    @keyframes dotBlink {
+      0%, 100% { background: #4caf50; box-shadow: 0 0 16px #4caf50; }
+      50% { background: #ffd966; box-shadow: 0 0 30px #ffd966; }
+    }
+
+    /* ----- RESPONSIVE ----- */
+    @media (max-width: 480px) {
+      .face-card { padding: 1.2rem; }
+      .eyes { gap: 2.8rem; }
+      .eye { width: 1.6rem; height: 1.6rem; }
+      .mouth { width: 4rem; height: 1.2rem; }
+      .robot-name { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="face-card">
+  <div class="face-screen">
+    <div class="face">
+
+      <!-- EYES -->
+      <div class="eyes">
+        <div class="eye" id="eyeLeft"></div>
+        <div class="eye" id="eyeRight"></div>
+      </div>
+
+      <!-- MOUTH (talking animated) -->
+      <div class="mouth-container">
+        <div class="mouth" id="mouth"></div>
+      </div>
+
+      <!-- NAME -->
+      <div class="robot-name">⚡ VISION AI</div>
+      <div class="status-badge" id="statusBadge">🎓 study buddy · class 7</div>
+
+    </div>
+  </div>
+
+  <!-- HOTSPOT connection indicator -->
+  <div class="hotspot-status">
+    <span class="hotspot-dot" id="hotspotDot"></span>
+    <span id="hotspotLabel">hotspot · active</span>
+    <span style="font-size:0.65rem; color:#4f6b9a; margin-left:0.2rem;">🔗</span>
+  </div>
+
+  <!-- small info -->
+  <div style="text-align:center; margin-top:0.8rem; font-size:0.65rem; color:#3e5590; letter-spacing:0.3px;">
+    connected to typing panel · oral answers
+  </div>
+</div>
+
+<script>
+  (function() {
+    // =============================================================
+    //  ROBOT FACE CONTROLLER
+    //  (listens for messages from the typing panel via localStorage)
+    // =============================================================
+
+    const eyeLeft = document.getElementById('eyeLeft');
+    const eyeRight = document.getElementById('eyeRight');
+    const mouth = document.getElementById('mouth');
+    const statusBadge = document.getElementById('statusBadge');
+    const hotspotDot = document.getElementById('hotspotDot');
+    const hotspotLabel = document.getElementById('hotspotLabel');
+
+    // ----- speech synthesis (for oral answers) -----
+    let speechSynth = window.speechSynthesis;
+    let utterance = null;
+    let isSpeaking = false;
+
+    function speakText(text) {
+      if (!window.speechSynthesis) {
+        console.warn('Speech not supported');
+        return;
+      }
+      // cancel any ongoing speech
+      if (speechSynth.speaking) {
+        speechSynth.cancel();
+      }
+
+      utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1;
+      utterance.lang = 'en-IN';
+
+      // --- activate talking animation ---
+      mouth.classList.add('talking');
+      eyeLeft.classList.add('talking');
+      eyeRight.classList.add('talking');
+      statusBadge.classList.add('speaking');
+      statusBadge.innerText = '🔊 speaking ...';
+
+      utterance.onend = () => {
+        mouth.classList.remove('talking');
+        eyeLeft.classList.remove('talking');
+        eyeRight.classList.remove('talking');
+        statusBadge.classList.remove('speaking');
+        statusBadge.innerText = '🎓 study buddy · class 7';
+        isSpeaking = false;
+      };
+
+      utterance.onerror = () => {
+        mouth.classList.remove('talking');
+        eyeLeft.classList.remove('talking');
+        eyeRight.classList.remove('talking');
+        statusBadge.classList.remove('speaking');
+        statusBadge.innerText = '🎓 study buddy · class 7';
+        isSpeaking = false;
+      };
+
+      isSpeaking = true;
+      speechSynth.speak(utterance);
+    }
+
+    // ----- handle incoming question from typing panel -----
+    function handleQuestion(question) {
+      if (!question || question.trim() === '') return;
+
+      // blink hotspot as feedback
+      hotspotDot.classList.remove('blink');
+      void hotspotDot.offsetWidth; // trigger reflow
+      hotspotDot.classList.add('blink');
+
+      // we need to answer using the same knowledge base as the typing panel,
+      // but the typing panel will send the answer via localStorage.
+      // However, to keep it self-contained, we'll also have a local knowledge base.
+      // But the typing panel sends the answer directly in the message.
+      // We'll just speak whatever answer we receive.
+      // The typing panel will send: { type: 'answer', text: '...' }
+      // For simplicity, we expect the typing panel to send the answer text.
+      // We'll speak it.
+      speakText(question);
+    }
+
+    // ----- listen for messages from typing panel (cross-tab via storage) -----
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'visionAiMessage') {
+        try {
+          const data = JSON.parse(e.newValue);
+          if (data && data.type === 'ask' && data.question) {
+            // The typing panel sent a question, but we need the answer.
+            // We'll use our own knowledge base to answer.
+            const answer = getAnswer(data.question);
+            // speak it
+            speakText(answer);
+            // update status
+            statusBadge.innerText = '🎯 answered!';
+            setTimeout(() => {
+              if (!isSpeaking) {
+                statusBadge.innerText = '🎓 study buddy · class 7';
+              }
+            }, 1200);
+            // blink dot
+            hotspotDot.classList.remove('blink');
+            void hotspotDot.offsetWidth;
+            hotspotDot.classList.add('blink');
+          } else if (data && data.type === 'speak' && data.text) {
+            // directly speak the text (for repeat)
+            speakText(data.text);
+          }
+        } catch (err) {
+          // ignore
+        }
+      }
+    });
+
+    // ----- local knowledge base (same as typing panel) -----
+    function getAnswer(query) {
+      if (!query || query.trim() === '') return "Please ask me something!";
+      const q = query.toLowerCase().trim();
+
+      const knowledge = {
+        'hi': "Hi, I am Vision AI, your study buddy! I cover Class 7 CBSE subjects: Math, Science, SST, English, and more.",
+        'hello': "Hello! I'm Vision AI. Ask me anything from your 7th grade syllabus or about Macro Vision Academy.",
+        'who are you': "I'm Vision AI, your study buddy, designed for Class 7 CBSE. I also know about Macro Vision Academy, Burhanpur.",
+        'what is your name': "My name is Vision AI. I'm here to help you study with oral answers!",
+        'vision ai': "That's me! Vision AI, your study buddy for Class 7 CBSE and Macro Vision Academy.",
+        'pythagoras theorem': "Pythagoras theorem: a² + b² = c² for right triangles. Class 7 CBSE introduces this.",
+        'pythagorean theorem': "Pythagoras theorem: a² + b² = c². Class 7 CBSE includes simple problems.",
+        'photosynthesis': "Photosynthesis: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂, using sunlight and chlorophyll. Class 7 Science.",
+        'class 7 science': "Class 7 Science: Nutrition in Plants, Nutrition in Animals, Heat, Acids & Bases, Physical & Chemical Changes, Weather, etc.",
+        'class 7 maths': "Class 7 Maths: Integers, Fractions, Decimals, Simple Equations, Lines & Angles, Triangles, Symmetry, Perimeter & Area, Rational Numbers.",
+        'class 7 sst': "Class 7 SST: History (Medieval India), Geography (Environment, Inside our Earth, Air, Water), Civics (Equality, State Government, Media & Gender).",
+        'class 7 english': "Class 7 English: Grammar, Reading Comprehension, Writing Skills, Literature (Honeycomb & An Alien Hand).",
+        'class 7 cbse': "CBSE Class 7: English, Hindi, Mathematics, Science, Social Science. I'm here for all!",
+        'macro vision academy': "Macro Vision Academy is a school in Burhanpur, MP, known for quality education and holistic development.",
+        'macro vision academy burhanpur': "Macro Vision Academy, Burhanpur is an esteemed institution focusing on academics, sports, and co-curriculars.",
+        'burhanpur': "Burhanpur is a city in Madhya Pradesh. Macro Vision Academy is one of the prominent schools there.",
+        'academy': "Macro Vision Academy, Burhanpur — a school that nurtures young minds. Vision AI is inspired by their learning environment.",
+        'vision academy': "You may mean Macro Vision Academy in Burhanpur. It's a great school!",
+        'what is 7th cbse': "CBSE Class 7 is the 7th grade under CBSE. Subjects: Math, Science, Social Science, English, Hindi.",
+        'help': "Ask me a question from Class 7 CBSE (Math, Science, SST, English) or about Macro Vision Academy, Burhanpur.",
+        'default': "I'm not sure about that. But I can answer Class 7 CBSE questions and about Macro Vision Academy, Burhanpur."
+      };
+
+      for (let [key, val] of Object.entries(knowledge)) {
+        if (q.includes(key)) return val;
+      }
+      if (q.includes('pythag') || q.includes('theorem')) return knowledge['pythagoras theorem'];
+      if (q.includes('photo') || q.includes('synthesis')) return knowledge['photosynthesis'];
+      if (q.includes('macro') || q.includes('vision academy') || q.includes('burhanpur')) return knowledge['macro vision academy burhanpur'];
+      if (q.includes('class 7') || q.includes('7th')) return knowledge['class 7 cbse'];
+      if (q.includes('math')) return knowledge['class 7 maths'];
+      if (q.includes('science')) return knowledge['class 7 science'];
+      if (q.includes('sst') || q.includes('social')) return knowledge['class 7 sst'];
+      if (q.includes('english')) return knowledge['class 7 english'];
+      return knowledge['default'];
+    }
+
+    // ----- initial greeting (speak after load) -----
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        const greeting = "Hi, I am Vision AI, your study buddy. Ask me anything from Class 7 CBSE or about Macro Vision Academy, Burhanpur.";
+        speakText(greeting);
+      }, 700);
+
+      // set hotspot active
+      hotspotDot.classList.remove('inactive');
+      hotspotLabel.innerText = 'hotspot · active';
+    });
+
+    // Also listen for direct 'ask' from typing panel via BroadcastChannel (fallback)
+    // But we'll use localStorage for cross-tab communication.
+    // We'll also support BroadcastChannel if available.
+    try {
+      const channel = new BroadcastChannel('vision-ai-channel');
+      channel.onmessage = (event) => {
+        const data = event.data;
+        if (data && data.type === 'ask' && data.question) {
+          const answer = getAnswer(data.question);
+          speakText(answer);
+          statusBadge.innerText = '🎯 answered!';
+          setTimeout(() => {
+            if (!isSpeaking) {
+              statusBadge.innerText = '🎓 study buddy · class 7';
+            }
+          }, 1200);
+          hotspotDot.classList.remove('blink');
+          void hotspotDot.offsetWidth;
+          hotspotDot.classList.add('blink');
+        } else if (data && data.type === 'speak' && data.text) {
+          speakText(data.text);
+        }
+      };
+    } catch (e) {
+      // BroadcastChannel not supported, fallback to localStorage
+    }
+
+    console.log('Vision AI Face ready · waiting for questions via hotspot');
+  })();
+</script>
+</body>
+</html>
