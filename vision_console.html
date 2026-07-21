@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vision AI — Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+  :root{
+    --bg-deep:#12142B; --bg-panel:#1C2044; --bg-panel-2:#232761;
+    --accent-cyan:#5EEAD4; --accent-amber:#FFB84D;
+    --text-primary:#F1F1F8; --text-muted:#8C90B8; --danger:#FF7A7A;
+    --font-display:'Baloo 2', sans-serif; --font-body:'Inter', sans-serif; --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(circle at 50% 0%, #1a1d45 0%, var(--bg-deep) 60%);
+    color:var(--text-primary); font-family:var(--font-body);
+    min-height:100vh; display:flex; justify-content:center; padding:24px 14px 30px;
+  }
+  .hidden{display:none !important;}
+  .app{width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;}
+  .brand{display:flex;align-items:baseline;justify-content:space-between;}
+  .brand h1{font-family:var(--font-display);font-weight:800;font-size:24px;margin:0;}
+  .brand h1 span{color:var(--accent-cyan);}
+  .brand .tag{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;}
+  .conn{
+    font-family:var(--font-mono);font-size:11px;letter-spacing:0.6px;text-transform:uppercase;
+    padding:5px 12px;border-radius:999px;background:rgba(255,255,255,0.05);color:var(--text-muted);
+    border:1px solid rgba(255,255,255,0.08);align-self:flex-start;
+  }
+  .conn.on{color:var(--accent-cyan);border-color:rgba(94,234,212,0.35);}
+  .conn.off{color:var(--danger);border-color:rgba(255,122,122,0.35);}
+  .conn.thinking{color:var(--accent-amber);border-color:rgba(255,184,77,0.35);}
+  .banner{
+    font-family:var(--font-mono);font-size:12px;color:var(--danger);background:rgba(255,122,122,0.08);
+    border:1px solid rgba(255,122,122,0.3);padding:8px 12px;border-radius:10px;display:none;
+  }
+  .setup{display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:14px;}
+  .setup input{
+    width:100%;background:var(--bg-panel);border:1px solid rgba(255,255,255,0.1);color:var(--text-primary);
+    padding:13px 16px;border-radius:14px;font-family:var(--font-body);font-size:15px;outline:none;text-align:center;
+  }
+  .setup input:focus{border-color:var(--accent-cyan);}
+  .setup .hint{font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);text-align:center;}
+  .setup .startbtn{
+    font-family:var(--font-display);font-weight:700;font-size:15px;padding:12px 26px;border-radius:999px;
+    border:none;background:var(--accent-cyan);color:#0b1220;cursor:pointer;
+    box-shadow:0 10px 30px -10px rgba(94,234,212,0.6);
+  }
+  .setup .startbtn:disabled{opacity:0.5;cursor:not-allowed;}
+  .transcript{
+    background:var(--bg-panel);border-radius:20px;border:1px solid rgba(255,255,255,0.06);
+    padding:14px;height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;
+  }
+  .msg{max-width:82%;padding:10px 13px;border-radius:14px;font-size:14.5px;line-height:1.45;}
+  .msg.bot{background:var(--bg-panel-2);align-self:flex-start;border-bottom-left-radius:4px;}
+  .msg.user{background:var(--accent-amber);color:#1c1400;align-self:flex-end;border-bottom-right-radius:4px;font-weight:500;}
+  .msg .who{display:block;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.8px;opacity:0.75;margin-bottom:3px;}
+  .inputbar{display:flex;gap:8px;}
+  .inputbar input{
+    flex:1;background:var(--bg-panel);border:1px solid rgba(255,255,255,0.08);color:var(--text-primary);
+    padding:13px 16px;border-radius:14px;font-size:14.5px;outline:none;
+  }
+  .inputbar input:focus{border-color:var(--accent-cyan);}
+  .sendbtn{
+    padding:0 20px;height:46px;background:var(--accent-cyan);color:#0b1220;border:none;
+    border-radius:14px;font-weight:600;cursor:pointer;flex-shrink:0;
+  }
+  .sendbtn:disabled{opacity:0.5;cursor:not-allowed;}
+  .footerline{text-align:center;font-family:var(--font-mono);font-size:10.5px;color:var(--text-muted);}
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand">
+    <h1>Vision<span> AI</span></h1>
+    <div class="tag">Console</div>
+  </div>
+  <div class="banner" id="banner"></div>
+
+  <div class="setup" id="setup">
+    <input type="text" id="roomInput" placeholder="Enter the same room code as the Face Display" autocomplete="off">
+    <div class="hint">Must match exactly what you typed on the Face Display page</div>
+    <button class="startbtn" id="connectBtn">Connect</button>
+  </div>
+
+  <div id="liveArea" class="hidden" style="display:flex;flex-direction:column;gap:12px;">
+    <div class="conn off" id="connChip">FACE DISPLAY: NOT CONNECTED</div>
+    <div class="transcript" id="transcript"></div>
+    <div class="inputbar">
+      <input type="text" id="textInput" placeholder="Type your Class 7 question..." autocomplete="off">
+      <button class="sendbtn" id="sendBtn">Ask</button>
+    </div>
+    <div class="footerline">The answer plays out loud on the Face Display</div>
+  </div>
+</div>
+
+<script>
+const roomInput  = document.getElementById('roomInput');
+const connectBtn = document.getElementById('connectBtn');
+const setupBox   = document.getElementById('setup');
+const liveArea   = document.getElementById('liveArea');
+const connChip   = document.getElementById('connChip');
+const transcript = document.getElementById('transcript');
+const banner     = document.getElementById('banner');
+const textInput  = document.getElementById('textInput');
+const sendBtn    = document.getElementById('sendBtn');
+
+let client = null, room = '', faceConnected = false;
+
+function showBanner(msg){
+  banner.textContent = msg; banner.style.display = 'block';
+  clearTimeout(showBanner._t);
+  showBanner._t = setTimeout(()=>{ banner.style.display='none'; }, 6000);
+}
+function addMessage(role, text){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  const who = document.createElement('span');
+  who.className = 'who'; who.textContent = role === 'user' ? 'You' : 'Vision AI';
+  div.appendChild(who);
+  const body = document.createElement('div'); body.textContent = text;
+  div.appendChild(body);
+  transcript.appendChild(div);
+  transcript.scrollTop = transcript.scrollHeight;
+}
+
+function connectRoom(code){
+  room = code.trim().toLowerCase().replace(/\s+/g, '-');
+  if(!room){ showBanner("⚠ Please enter a room code."); return; }
+  connectBtn.disabled = true;
+  connectBtn.textContent = 'Connecting…';
+  try{
+    client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+      clientId: 'visionai-console-' + Math.random().toString(16).slice(2),
+      will: { topic: 'visionai/' + room + '/console/presence', payload: 'offline', retain: true }
+    });
+  }catch(e){
+    showBanner("⚠ Couldn't connect. Check your internet connection and try again.");
+    connectBtn.disabled = false; connectBtn.textContent = 'Connect';
+    return;
+  }
+  client.on('connect', () => {
+    client.publish('visionai/' + room + '/console/presence', 'online', {retain:true});
+    client.subscribe('visionai/' + room + '/toconsole');
+    client.subscribe('visionai/' + room + '/face/presence');
+    setupBox.classList.add('hidden');
+    liveArea.classList.remove('hidden');
+  });
+  client.on('message', (topic, payload) => {
+    const text = payload.toString();
+    if(topic.endsWith('/face/presence')){
+      faceConnected = text === 'online';
+      connChip.textContent = 'FACE DISPLAY: ' + (faceConnected ? 'CONNECTED' : 'NOT CONNECTED');
+      connChip.classList.toggle('on', faceConnected);
+      connChip.classList.toggle('off', !faceConnected);
+    }else if(topic.endsWith('/toconsole')){
+      try{
+        const msg = JSON.parse(text);
+        if(msg.kind === 'answer'){ sendBtn.disabled = false; addMessage('bot', msg.text); }
+        else if(msg.kind === 'state'){ connChip.classList.toggle('thinking', msg.text === 'thinking'); }
+      }catch(e){ /* ignore malformed message */ }
+    }
+  });
+  client.on('error', () => {
+    showBanner("⚠ Connection error. Please check your internet and try again.");
+  });
+}
+connectBtn.addEventListener('click', () => connectRoom(roomInput.value));
+roomInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') connectRoom(roomInput.value); });
+
+function handleSend(){
+  const q = textInput.value.trim();
+  if(!q) return;
+  if(!faceConnected){
+    showBanner("⚠ Face Display isn't connected yet. Open it, enter the same room code, tap Connect, then 'Wake up Vision AI'.");
+    return;
+  }
+  addMessage('user', q);
+  textInput.value = '';
+  sendBtn.disabled = true;
+  client.publish('visionai/' + room + '/toface', JSON.stringify({kind:'question', text:q, ts:Date.now()}));
+}
+sendBtn.addEventListener('click', handleSend);
+textInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') handleSend(); });
+</script>
+</body>
+</html>
