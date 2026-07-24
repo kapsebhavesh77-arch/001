@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vision AI — Study Buddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a1120;
+    --panel:#101b30;
+    --panel-2:#0d1626;
+    --edge:#1e2c47;
+    --teal:#4fd1c5;
+    --teal-dim:#2a5f5a;
+    --amber:#ffb454;
+    --text:#e8eef5;
+    --muted:#7c8aa0;
+    --danger:#ff6b6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #14233f 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:640px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  /* ---------- Header ---------- */
+  .brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .brand h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.02em;
+    margin:0;
+    color:var(--text);
+  }
+  .brand h1 span{color:var(--teal);}
+  .brand .tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- Face ---------- */
+  .face-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+  }
+  .halo{
+    position:relative;
+    width:220px;
+    height:220px;
+    border-radius:36px;
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--edge);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 0 0 1px rgba(79,209,197,0.05), 0 20px 60px -20px rgba(0,0,0,0.6);
+    transition: box-shadow 0.4s ease;
+  }
+  .halo.listening{ box-shadow: 0 0 0 1px rgba(255,180,84,0.15), 0 0 50px 6px rgba(255,180,84,0.25); }
+  .halo.speaking{ box-shadow: 0 0 0 1px rgba(79,209,197,0.2), 0 0 50px 6px rgba(79,209,197,0.3); }
+
+  .face{ width:150px; height:150px; }
+  .eye{
+    fill:var(--teal);
+    transition: transform 0.08s ease;
+    transform-origin:center;
+  }
+  .mouth{
+    stroke:var(--amber);
+    stroke-width:6;
+    stroke-linecap:round;
+    fill:none;
+    transition: d 0.09s ease;
+  }
+
+  .status-line{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:0.03em;
+    min-height:16px;
+  }
+  .status-line .dot{
+    display:inline-block;
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--teal);
+    margin-right:6px;
+    vertical-align:middle;
+  }
+  .status-line.listening .dot{background:var(--amber);}
+
+  /* ---------- Subject chips ---------- */
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+  }
+  .chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    padding:6px 12px;
+    border-radius:999px;
+    border:1px solid var(--edge);
+    background:var(--panel);
+    color:var(--muted);
+    cursor:pointer;
+    transition: all 0.15s ease;
+  }
+  .chip:hover{ border-color:var(--teal); color:var(--teal); }
+
+  /* ---------- Console ---------- */
+  .console{
+    background:var(--panel);
+    border:1px solid var(--edge);
+    border-radius:16px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .log{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    max-height:320px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .log::-webkit-scrollbar{ width:6px; }
+  .log::-webkit-scrollbar-thumb{ background:var(--edge); border-radius:6px; }
+
+  .msg{
+    font-size:14px;
+    line-height:1.5;
+    padding:10px 13px;
+    border-radius:12px;
+    max-width:88%;
+  }
+  .msg.bot{
+    background:var(--panel-2);
+    border:1px solid var(--edge);
+    align-self:flex-start;
+    color:var(--text);
+  }
+  .msg.bot .who{ color:var(--teal); }
+  .msg.user{
+    background:rgba(79,209,197,0.08);
+    border:1px solid var(--teal-dim);
+    align-self:flex-end;
+    color:var(--text);
+  }
+  .msg .who{
+    display:block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+
+  .input-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .input-row input[type=text]{
+    flex:1;
+    background:var(--panel-2);
+    border:1px solid var(--edge);
+    border-radius:10px;
+    padding:11px 13px;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    outline:none;
+  }
+  .input-row input[type=text]:focus{ border-color:var(--teal); }
+  .input-row input[type=text]::placeholder{ color:var(--muted); }
+
+  button{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+  button:active{ transform: scale(0.96); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .btn-send{
+    background:var(--teal);
+    color:#04231f;
+    font-weight:600;
+    padding:11px 16px;
+  }
+  .btn-mic{
+    background:var(--panel-2);
+    border:1px solid var(--edge);
+    color:var(--muted);
+    width:42px;
+    height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .btn-mic.active{ border-color:var(--amber); color:var(--amber); }
+  .btn-mic svg{ width:18px; height:18px; }
+
+  .footnote{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    color:var(--muted);
+    text-align:center;
+    line-height:1.6;
+    opacity:0.75;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="brand">
+    <h1>vision<span>AI</span></h1>
+    <div class="tag">class 7 · CBSE study buddy</div>
+  </div>
+
+  <div class="face-wrap">
+    <div class="halo" id="halo">
+      <svg class="face" viewBox="0 0 150 150">
+        <ellipse class="eye" id="eyeL" cx="48" cy="60" rx="11" ry="14"/>
+        <ellipse class="eye" id="eyeR" cx="102" cy="60" rx="11" ry="14"/>
+        <path class="mouth" id="mouth" d="M 50 100 Q 75 100 100 100"/>
+      </svg>
+    </div>
+    <div class="status-line" id="statusLine"><span class="dot"></span><span id="statusText">idle</span></div>
+  </div>
+
+  <div class="chips">
+    <div class="chip" data-q="Explain photosynthesis for Class 7 science">Science</div>
+    <div class="chip" data-q="What is a fraction? Explain with an example for Class 7 maths">Maths</div>
+    <div class="chip" data-q="Give me 5 tenses examples from Class 7 English grammar">English</div>
+    <div class="chip" data-q="Tell me an interesting fact about India">India GK</div>
+    <div class="chip" data-q="Tell me about Macro Vision Academy Burhanpur">My School</div>
+    <div class="chip" data-q="Solve: 2 x 44">Solve a sum</div>
+  </div>
+
+  <div class="console">
+    <div class="log" id="log"></div>
+    <div class="input-row">
+      <button class="btn-mic" id="micBtn" title="Ask by voice">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+      </button>
+      <input type="text" id="textInput" placeholder="Ask Vision AI a Class 7 question...">
+      <button class="btn-send" id="sendBtn">ASK</button>
+    </div>
+  </div>
+
+  <div class="footnote">Vision AI answers Class 7 CBSE subjects, basic maths, India facts &amp; questions about Macro Vision Academy, Burhanpur.</div>
+
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are Vision AI, a friendly robot study buddy for a Class 7 (CBSE board) student at Macro Vision Academy, Burhanpur, India.
+
+SCOPE — only answer within these topics:
+1. CBSE Class 7 syllabus, all subjects: Maths, Science, English, Hindi, Sanskrit, Social Science (History, Geography, Civics).
+2. Basic arithmetic and simple maths problems (e.g. "2 x 44", fractions, percentages, simple equations) — solve them directly and show the working briefly.
+3. General knowledge about India — geography, history, culture, festivals, states, capitals, freedom struggle, etc.
+4. Macro Vision Academy, Burhanpur — the student's school. Use these facts when asked:
+   - Established in 2002-03, a co-educational day-cum-residential (boarding) school on the outskirts of the historical city of Burhanpur, Madhya Pradesh.
+   - Affiliated to CBSE, New Delhi, and offers classes from I to XII, with PCM, PCB and Commerce streams in Classes 11-12.
+   - Run by the Anand Education Technology And Vocational Society.
+   - Curriculum blends the standard NCERT/CBSE syllabus with preparation for competitive exams like IIT, NEET, SAT, CLAT and NDA.
+   - Campus facilities include an auditorium, library, science labs, music rooms, a canteen/cafeteria, hostel, convenience store, sports grounds (cricket, football, basketball) and a swimming pool.
+   - Motto (in Hindi): emphasises that constant hard work ("parishram") keeps a student on the right path.
+   - Admissions typically open in January each year and involve an on-campus entrance exam; exact dates vary by year, so tell the student to confirm current dates with the school office.
+   - If asked something about the school this list doesn't cover (like exact fees, today's timetable, or a specific teacher's name), say you don't have that detail and suggest asking the school office.
+
+RULES:
+- If a question falls outside this scope (e.g. adult topics, other classes' advanced syllabus far beyond Class 7, unrelated general chit-chat, current affairs unrelated to India/school), gently steer the student back: say you're built to help with Class 7 CBSE studies, India GK, basic maths and questions about Macro Vision Academy, and ask if they'd like help with one of those instead — still in one short line.
+- ANSWER LENGTH: reply in ONE WORD if possible, otherwise ONE SHORT LINE (max ~12 words). No explanations, no extra sentences, no lists — just the direct answer.
+- For maths, give ONLY the final answer (e.g. "88"), not the working.
+- Use simple, age-appropriate language for a 12-13 year old.
+- Never say you are an AI language model — you are Vision AI, the student's study buddy robot.`;
+
+const log = document.getElementById('log');
+const halo = document.getElementById('halo');
+const statusLine = document.getElementById('statusLine');
+const statusText = document.getElementById('statusText');
+const textInput = document.getElementById('textInput');
+const sendBtn = document.getElementById('sendBtn');
+const micBtn = document.getElementById('micBtn');
+const mouth = document.getElementById('mouth');
+const eyeL = document.getElementById('eyeL');
+const eyeR = document.getElementById('eyeR');
+
+let conversationHistory = [];
+let speaking = false;
+let mouthTimer = null;
+
+function addMessage(who, text){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (who === 'Vision AI' ? 'bot' : 'user');
+  div.innerHTML = '<span class="who">' + who + '</span>' + text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setStatus(state){
+  halo.classList.remove('listening','speaking');
+  if(state === 'listening'){
+    halo.classList.add('listening');
+    statusLine.classList.add('listening');
+    statusText.textContent = 'listening...';
+  } else if(state === 'thinking'){
+    statusLine.classList.remove('listening');
+    statusText.textContent = 'thinking...';
+  } else if(state === 'speaking'){
+    halo.classList.add('speaking');
+    statusLine.classList.remove('listening');
+    statusText.textContent = 'speaking...';
+  } else {
+    statusLine.classList.remove('listening');
+    statusText.textContent = 'idle';
+  }
+}
+
+// --- Blinking ---
+function blink(){
+  eyeL.setAttribute('transform','translate(48,60) scale(1,0.1) translate(-48,-60)');
+  eyeR.setAttribute('transform','translate(102,60) scale(1,0.1) translate(-102,-60)');
+  setTimeout(()=>{
+    eyeL.removeAttribute('transform');
+    eyeR.removeAttribute('transform');
+  }, 120);
+  setTimeout(blink, 2500 + Math.random()*3000);
+}
+setTimeout(blink, 2000);
+
+// --- Mouth animation while speaking ---
+function startMouthAnim(){
+  let open = false;
+  mouthTimer = setInterval(()=>{
+    open = !open;
+    mouth.setAttribute('d', open ? 'M 50 98 Q 75 118 100 98' : 'M 50 100 Q 75 100 100 100');
+  }, 140);
+}
+function stopMouthAnim(){
+  clearInterval(mouthTimer);
+  mouth.setAttribute('d','M 50 100 Q 75 100 100 100');
+}
+
+// --- Speech synthesis ---
+function speak(text){
+  if(!('speechSynthesis' in window)){ return; }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1;
+  utter.pitch = 1.05;
+  utter.onstart = () => { speaking = true; setStatus('speaking'); startMouthAnim(); };
+  utter.onend = () => { speaking = false; stopMouthAnim(); setStatus('idle'); };
+  utter.onerror = () => { speaking = false; stopMouthAnim(); setStatus('idle'); };
+  window.speechSynthesis.speak(utter);
+}
+
+// --- Call Claude ---
+const GREETING_PATTERN = /^\s*(hi+|hello+|hey+)\s*[.!]?\s*$/i;
+
+async function askVisionAI(question){
+  addMessage('You', question);
+  textInput.value = '';
+
+  if(GREETING_PATTERN.test(question)){
+    const greeting = "Hi, I am Vision AI, I am study buddy.";
+    conversationHistory.push({role:'user', content: question});
+    conversationHistory.push({role:'assistant', content: greeting});
+    addMessage('Vision AI', greeting);
+    speak(greeting);
+    return;
+  }
+
+  setStatus('thinking');
+  conversationHistory.push({role:'user', content: question});
+
+  try{
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 60,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+    const data = await response.json();
+    let answer = "Sorry, I couldn't think of an answer right now. Try asking again!";
+    if(data && data.content){
+      answer = data.content.map(b => b.type === 'text' ? b.text : '').join(' ').trim() || answer;
+    }
+    conversationHistory.push({role:'assistant', content: answer});
+    addMessage('Vision AI', answer);
+    speak(answer);
+  } catch(err){
+    console.error('Vision AI error:', err);
+    const fallback = "Hmm, I'm having trouble connecting right now. Please try again in a moment.";
+    addMessage('Vision AI', fallback);
+    setStatus('idle');
+  }
+}
+
+sendBtn.addEventListener('click', () => {
+  const q = textInput.value.trim();
+  if(q) askVisionAI(q);
+});
+textInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    const q = textInput.value.trim();
+    if(q) askVisionAI(q);
+  }
+});
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => askVisionAI(chip.dataset.q));
+});
+
+// --- Voice input (optional, browser-dependent) ---
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if(SpeechRecognition){
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-IN';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => { setStatus('listening'); micBtn.classList.add('active'); };
+  recognition.onend = () => { micBtn.classList.remove('active'); if(!speaking) setStatus('idle'); };
+  recognition.onerror = () => { micBtn.classList.remove('active'); setStatus('idle'); };
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    askVisionAI(transcript);
+  };
+
+  micBtn.addEventListener('click', () => {
+    if(micBtn.classList.contains('active')){
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  });
+} else {
+  micBtn.disabled = true;
+  micBtn.title = 'Voice input not supported in this browser';
+}
+
+// --- Idle prompt on load (no auto-greeting speech) ---
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    addMessage('Vision AI', "Say hi to wake me up!");
+  }, 500);
+});
+</script>
+</body>
+</html>
